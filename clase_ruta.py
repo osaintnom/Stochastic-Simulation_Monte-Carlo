@@ -1,9 +1,8 @@
-import pandas as pd 
+from clase_auto import Auto
+import pandas as pd
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import numpy as np
-
-from clase_auto import Auto
 
 class Ruta:
     def __init__(self, autos):
@@ -12,7 +11,7 @@ class Ruta:
         self.xdata, self.ydata = [], []
         self.ln, = plt.plot([], [], 'ro', animated=True)
         self.ax.set_xlim(0, 100)
-        self.ax.set_ylim(0, 100)
+        self.ax.set_ylim(-10, 10)
         self.ax.grid()
         self.ax.set_title('Ruta de autos')
         self.ax.set_xlabel('Posición en x')
@@ -34,3 +33,8 @@ class Ruta:
     def animar(self):
         ani = animation.FuncAnimation(self.fig, self.update, frames=np.linspace(0, 100, 100), init_func=self.init, blit=True, interval=100, repeat=False)
         plt.show()
+
+print('Creando autos...')
+
+G_P = Ruta([Auto(0, 0, 1, 'red', 'G_P'), Auto(0, 0, 2, 'blue', 'G_P'), Auto(0, 0, 3, 'green', 'G_P')])
+G_P.animar()
