@@ -34,9 +34,10 @@ class Auto:
         if self.velocidad == 0:
             self.velocidad = 2
         try:
-            if self.x >= self.next_car.x:
+            if self.x >= self.next_car.x -4:
                 self.velocidad = 0
-                    
+            elif self.x >= self.next_car.x - 10:
+                self.x += self.velocidad /4  
             else:
                 self.x += self.velocidad
         except:

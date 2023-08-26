@@ -14,7 +14,7 @@ class Ruta:
         self.x_max = x_max
         self.fig, self.ax = plt.subplots()
         self.xdata, self.ydata = [], []
-        self.ln, = plt.plot([], [], 'ks', markersize=10, markerfacecolor='orange', animated=True)
+        self.ln, = plt.plot([], [], 'ks', markersize=5, markerfacecolor='orange', animated=True)
         self.ax.set_xlim(0, x_max)
         self.ax.set_ylim(-1, 1)
         self.ax.grid()
