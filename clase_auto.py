@@ -8,13 +8,14 @@ import time
 
 
 class Auto:
-    def __init__(self, x, y, velocidad, color, nombre, x_max=100, y_max=10):
+    def __init__(self, x, y, velocidad, color, nombre, x_max=1000, y_max=10,next_car=None):
         self.x = x
         self.y = y
         self.x_max = x_max
         self.velocidad = velocidad
         self.color = color
         self.nombre = nombre
+        self.next_car = next_car
 
         threading = th.Thread(target=self.acelerar, args=())
         threading.start()
@@ -22,12 +23,24 @@ class Auto:
 
     def acelerar(self):
         while self.x < self.x_max:
-            acelerar = abs(random.lognormvariate(0.5, 0.1))
+            acelerar = abs(random.uniform(0, 3))
             self.velocidad = self.velocidad * acelerar
+            if self.velocidad < 0.5:
+                self.velocidad = 1
             time.sleep(0.5)
 
+
     def avanzar(self):
-        self.x += self.velocidad
+        if self.velocidad == 0:
+            self.velocidad = 2
+        try:
+            if self.x >= self.next_car.x:
+                self.velocidad = 0
+                    
+            else:
+                self.x += self.velocidad
+        except:
+            self.x += self.velocidad
 
     def retroceder(self):
         self.x -= self.velocidad
