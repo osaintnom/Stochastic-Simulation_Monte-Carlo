@@ -10,7 +10,10 @@ import time
 
 class Ruta:
     def __init__(self, autos,tiempo=100,x_max=1000,y_max=10):
+        # lista en la que guardo los autos en la autopista, abria que ver si podemos ir eliminando los autos
         self.autos = autos
+
+        #tamaño maximo de la ruta
         self.x_max = x_max
         self.fig, self.ax = plt.subplots()
         self.xdata, self.ydata = [], []
@@ -59,3 +62,7 @@ print('Creando autos...')
 
 G_P = Ruta([Auto(0, 0, 2, 'red', 'G_P')])
 G_P.animar()
+
+
+
+## funcion de ordenar lista
