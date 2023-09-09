@@ -38,9 +38,22 @@ class Ruta:
         threading_autos = th.Thread(target=self.generar_autos, args=(tiempo,))
         threading_autos.start()
 
+
+
     def init(self):
         self.ln.set_data([], [])
         return self.ln,
+
+    def eliminar_choques(self):
+        choques = []
+        for auto in self.autos[::-1]:
+            if auto.colision == True:
+                choques.append(auto)
+        for auto in choques:
+            self.autos.remove(auto)
+        for auto in self.autos[1:]:
+            auto.next_car = self.autos[self.autos.index(auto) - 1]
+
 
     def update(self, frame):
         self.xdata, self.ydata = [], []

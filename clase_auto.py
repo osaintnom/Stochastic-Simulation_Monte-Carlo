@@ -19,6 +19,7 @@ class Auto:
         self.mean = mean
         self.delta = delta
         self.alpha = alpha
+        self.colision = False
          
         # agregar velocidad maxima?
 
@@ -54,13 +55,17 @@ class Auto:
 
 
     def avanzar(self):
+        if self.colision == True:
+            return
         # si chocaste y frenaste, volves a arrancar
         if self.velocidad == 0:
             self.velocidad = 1
+        
         try:
             #si lo estas chocando frena
-            if self.x >= self.next_car.x -4:
+            if self.x >= self.next_car.x -2:
                 self.velocidad = 0
+                self.colision = True
             #si estas a menos de 10 de distancia desacelera
             # elif self.x >= self.next_car.x - 15:
             #     self.x += self.velocidad /10 
@@ -82,3 +87,44 @@ class Auto:
         return self.next_car.x
     
 
+
+
+
+
+    def acelerar_nuevo(self):
+
+
+        while self.x < self.x_max and self.colision == False:
+        #     if self.velocidad - self.mean < self.mean/10:
+        #         pass
+        #         #en este caso sigue acelerando si puede
+
+        #     else:
+
+
+                # en este caso quiere mantenerse cconstante
+
+
+
+
+
+            #aceleracion aleatoria sobre la velocidad del auto
+            # acelerar = abs(random.uniform(0, 3))
+            # acelerar = random.gammavariate(1, 1)
+            # self.velocidad = self.velocidad * acelerar
+
+            # #velocidad minima
+            # if self.velocidad < 0.5:
+            #     self.velocidad = 1
+            # time.sleep(0.2)
+            if self.next_car == None:
+                self.velocidad = self.velocidad + self.alpha * (self.mean - self.velocidad) + self.velocidad *self.delta* random.normalvariate(0, 2)    
+                if self.velocidad <0.2:
+                    self.velocidad = 0.2
+            elif (self.next_car.x - self.x) < 4:
+                self.velocidad = 0
+            else:
+                self.velocidad = self.velocidad + self.alpha * (self.mean - self.velocidad) + self.delta* random.normalvariate(0, 2)    -abs((10/(self.next_car.x - self.x))*random.normalvariate(0, 2))
+                if self.velocidad <0.2:
+                    self.velocidad = 0.2
+            time.sleep(0.2)
