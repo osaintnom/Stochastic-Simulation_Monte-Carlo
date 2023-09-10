@@ -8,7 +8,7 @@ import time
 
 
 class Auto:
-    def __init__(self, x, y, velocidad, color, nombre, x_max=1000, y_max=10,next_car=None,mean = 2.7, delta = 1, alpha = 0.05):
+    def __init__(self, x, y, velocidad, color, nombre, x_max=1000, y_max=10,next_car=None,mean = 2.2, delta = 1, alpha = 0.05):
         self.x = x
         self.y = y # por ahora no hace nada pero seria como cambiar de carril
         self.x_max = x_max  # marca donde termina la ruta
@@ -19,6 +19,15 @@ class Auto:
         self.mean = mean
         self.delta = delta
         self.alpha = alpha
+        self.reaction_time_mean = random.uniform(0.1,0.3)
+        self.aceleracion_max = random.gammavariate(0.1,0.05)
+        if self.aceleracion_max > 0.22:
+            self.aceleracion_max = 0.22
+
+        self.frenado_max = random.gammavariate(0.4,0.1)
+        if self.frenado_max > 0.6:
+            self.frenado_max = 0.6
+
         self.colision = False
          
         # agregar velocidad maxima?
@@ -28,30 +37,30 @@ class Auto:
         threading.start()
         
 
-    def acelerar(self):
+    # def acelerar(self):
 
 
-        while self.x < self.x_max:
-            #aceleracion aleatoria sobre la velocidad del auto
-            # acelerar = abs(random.uniform(0, 3))
-            # acelerar = random.gammavariate(1, 1)
-            # self.velocidad = self.velocidad * acelerar
+    #     while self.x < self.x_max:
+    #         #aceleracion aleatoria sobre la velocidad del auto
+    #         # acelerar = abs(random.uniform(0, 3))
+    #         # acelerar = random.gammavariate(1, 1)
+    #         # self.velocidad = self.velocidad * acelerar
 
-            # #velocidad minima
-            # if self.velocidad < 0.5:
-            #     self.velocidad = 1
-            # time.sleep(0.2)
-            if self.next_car == None:
-                self.velocidad = self.velocidad + self.alpha * (self.mean - self.velocidad) + self.velocidad *self.delta* random.normalvariate(0, 2)    
-                if self.velocidad <0.2:
-                    self.velocidad = 0.2
-            elif (self.next_car.x - self.x) < 4:
-                self.velocidad = 0
-            else:
-                self.velocidad = self.velocidad + self.alpha * (self.mean - self.velocidad) + self.delta* random.normalvariate(0, 2)    -abs((10/(self.next_car.x - self.x))*random.normalvariate(0, 2))
-                if self.velocidad <0.2:
-                    self.velocidad = 0.2
-            time.sleep(0.2)
+    #         # #velocidad minima
+    #         # if self.velocidad < 0.5:
+    #         #     self.velocidad = 1
+    #         # time.sleep(0.2)
+    #         if self.next_car == None:
+    #             self.velocidad = self.velocidad + self.alpha * (self.mean - self.velocidad) + self.velocidad *self.delta* random.normalvariate(0, 2)    
+    #             if self.velocidad <0.2:
+    #                 self.velocidad = 0.2
+    #         elif (self.next_car.x - self.x) < 4:
+    #             self.velocidad = 0
+    #         else:
+    #             self.velocidad = self.velocidad + self.alpha * (self.mean - self.velocidad) + self.delta* random.normalvariate(0, 2)    -abs((10/(self.next_car.x - self.x))*random.normalvariate(0, 2))
+    #             if self.velocidad <0.2:
+    #                 self.velocidad = 0.2
+    #         time.sleep(0.2)
 
 
     def avanzar(self):
@@ -66,6 +75,8 @@ class Auto:
             if self.x >= self.next_car.x -2:
                 self.velocidad = 0
                 self.colision = True
+                self.next_car.colision = True
+                self.x = self.next_car.x
             #si estas a menos de 10 de distancia desacelera
             # elif self.x >= self.next_car.x - 15:
             #     self.x += self.velocidad /10 
@@ -91,18 +102,74 @@ class Auto:
 
 
 
-    def acelerar_nuevo(self):
-
+    def acelerar(self):
 
         while self.x < self.x_max and self.colision == False:
-        #     if self.velocidad - self.mean < self.mean/10:
-        #         pass
-        #         #en este caso sigue acelerando si puede
+            
 
-        #     else:
+            # se desconcentra 
+            
 
+            if self.next_car == None:
+                if self.velocidad - self.mean < self.mean/10:
+                    acelerar = random.gammavariate(0.15, 1)
+                    if acelerar > self.aceleracion_max:
+                        acelerar = self.aceleracion_max
+                    self.velocidad = self.velocidad + acelerar
+                else:
+                    acelerar = random.normalvariate(0, 0.25)
+                    if acelerar > self.aceleracion_max:
+                        acelerar = self.aceleracion_max
+                    self.velocidad = self.velocidad + acelerar
+                    
+                
+            elif self.velocidad - self.mean < self.mean/10:
 
-                # en este caso quiere mantenerse cconstante
+                vel_n = self.next_car.velocidad
+                dist = self.next_car.x - self.x
+                if self.velocidad == vel_n:
+                    tiempo = 100
+
+                tiempo = (dist/(self.velocidad - vel_n))/10
+                if tiempo > 0 and tiempo < 1:
+                    frenado = 1/(tiempo**10)  * (-1 * random.lognormvariate(5,1))  
+                    if frenado < -self.frenado_max:
+                        print('esto')
+                        frenado = -self.frenado_max
+                    self.velocidad = self.velocidad + frenado
+                    if self.velocidad < 0:
+                        self.velocidad = 0
+                else:
+                    acelerar = random.gammavariate(0.15, 1)
+                    if acelerar > self.aceleracion_max:
+                        acelerar = self.aceleracion_max
+                    self.velocidad = self.velocidad + acelerar
+
+                                  #en este caso sigue acelerando si puede
+                #tiempo es muy chico quiero que frene rapdifo
+                #si el timepo es mucho 
+            else:
+                vel_n = self.next_car.velocidad
+                dist = self.next_car.x - self.x
+                tiempo = (dist/(self.velocidad - vel_n))/10
+                if tiempo > 0 and tiempo < 3:
+                    frenado = 1/(tiempo**2)  * (-1 * random.lognormvariate(5,1))  
+                    if frenado < -self.frenado_max:
+                        print('esto')
+                        frenado = -self.frenado_max
+                    self.velocidad = self.velocidad + frenado
+                    if self.velocidad < 0:
+                        self.velocidad = 0
+                else:
+                    acelerar = random.normalvariate(0, 0.25)
+                    if acelerar > self.aceleracion_max:
+                        acelerar = self.aceleracion_max
+                    self.velocidad = self.velocidad + acelerar
+                    if self.velocidad < 0:
+                        self.velocidad = 0
+
+                                  #en este caso sigue acelerando si puede
+                # en este caso quiere mantenerse cconstante 
 
 
 
@@ -117,14 +184,12 @@ class Auto:
             # if self.velocidad < 0.5:
             #     self.velocidad = 1
             # time.sleep(0.2)
-            if self.next_car == None:
-                self.velocidad = self.velocidad + self.alpha * (self.mean - self.velocidad) + self.velocidad *self.delta* random.normalvariate(0, 2)    
-                if self.velocidad <0.2:
-                    self.velocidad = 0.2
-            elif (self.next_car.x - self.x) < 4:
-                self.velocidad = 0
+            chance = random.uniform(0,1)
+            if chance < 0.05:
+                time.sleep(0.5)
+            elif chance < 0.055:
+                time.sleep(1)
+            elif chance < 0.057:
+                time.sleep(2)
             else:
-                self.velocidad = self.velocidad + self.alpha * (self.mean - self.velocidad) + self.delta* random.normalvariate(0, 2)    -abs((10/(self.next_car.x - self.x))*random.normalvariate(0, 2))
-                if self.velocidad <0.2:
-                    self.velocidad = 0.2
-            time.sleep(0.2)
+                time.sleep(random.uniform(self.reaction_time_mean - 0.1, self.reaction_time_mean + 0.1))

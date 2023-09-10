@@ -9,7 +9,7 @@ import time
 
 
 class Ruta:
-    def __init__(self, autos=[],tiempo=100,x_max=2000,y_max=10):
+    def __init__(self, autos=[],tiempo=100,x_max=300,y_max=10):
 
         
 
@@ -29,7 +29,7 @@ class Ruta:
         self.ax.set_xlabel('Posición en x')
         self.ax.set_ylabel('Posición en y')
         self.colores = ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown', 'gray', 'black']
-        self.autos.append(Auto(0, 0, random.normalvariate(2.7, 0.5), random.choice(self.colores), 'Auto ' + str(len(self.autos) + 1), x_max=self.x_max, y_max=10,mean = random.normalvariate(2.7,0.5)))
+        self.autos.append(Auto(0, 0, random.normalvariate(2.7, 0.5), random.choice(self.colores), str(random.randint(1,2000)) + str(len(self.autos) + 1), x_max=self.x_max, y_max=10,mean = random.normalvariate(2.7,0.5)))
         
 
 
@@ -37,6 +37,9 @@ class Ruta:
         # Genera autos de manera automatica
         threading_autos = th.Thread(target=self.generar_autos, args=(tiempo,))
         threading_autos.start()
+        threading_choques = th.Thread(target=self.eliminar_choques, args=(tiempo,))
+        threading_choques.start()
+
 
 
 
@@ -44,15 +47,26 @@ class Ruta:
         self.ln.set_data([], [])
         return self.ln,
 
-    def eliminar_choques(self):
-        choques = []
-        for auto in self.autos[::-1]:
-            if auto.colision == True:
-                choques.append(auto)
-        for auto in choques:
-            self.autos.remove(auto)
-        for auto in self.autos[1:]:
-            auto.next_car = self.autos[self.autos.index(auto) - 1]
+    def repr(self) -> str:
+        return f"Car {self.nombre}, color {self.color}: (x={self.x}, velocidad={self.velocidad}, vmax={self.vmax}, aceleracion={self.acelerar()} Auto siguiente: {self.next_car.nombre} con vel: {self.next_car.velocidad})"
+    
+    def eliminar_choques(self,tiempo):
+        
+        inicio = time.time()
+        while time.time() - inicio < tiempo:
+            choques = []
+            for auto in self.autos[::-1]:
+                if auto.colision == True or auto.x > self.x_max:
+                    choques.append(auto)
+            for auto in choques:
+                self.autos.remove(auto)
+            for auto in self.autos[1:]:
+                auto.next_car = self.autos[self.autos.index(auto) - 1]
+            self.autos[0].next_car = None
+
+            time.sleep(0.5)
+        
+
 
 
     def update(self, frame):
@@ -70,12 +84,18 @@ class Ruta:
         ani = animation.FuncAnimation(self.fig, self.update, frames=np.linspace(0, 100, 100), init_func=self.init, blit=True, interval=100, repeat=True,)
         plt.show()
 
+    
+
     def generar_autos(self, tiempo):
         
         inicio = time.time()
         while time.time() - inicio < tiempo:
-            self.autos.append(Auto(0, 0, random.normalvariate(2.7, 0.5), random.choice(self.colores), 'Auto ' + str(len(self.autos) + 1), x_max=self.x_max, y_max=10, next_car= self.autos[-1],mean = random.normalvariate(2.7,0.5)))
-            pausa = random.randint(1, 3)
+            try:
+                self.autos.append(Auto(0, 0, random.normalvariate(1, 0.5), random.choice(self.colores), 'Auto ' + str(len(self.autos) + 1), x_max=self.x_max, y_max=10, next_car= self.autos[-1],mean = random.normalvariate(2.22,0.5)))
+                pausa = random.randint(1, 3)
+            except:
+                self.autos.append(Auto(0, 0, random.normalvariate(1, 0.5), random.choice(self.colores), 'Auto ' + str(len(self.autos) + 1), x_max=self.x_max, y_max=10, next_car= None,mean = random.normalvariate(2.22,0.5)))
+
             time.sleep(pausa)
 
 print('Creando autos...')
