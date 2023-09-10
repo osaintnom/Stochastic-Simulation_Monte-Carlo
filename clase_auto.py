@@ -95,10 +95,10 @@ class Auto:
             self.x = self.next_car.x
 
     def __str__(self):
-        return self.next_car.x
+        if self.next_car == None:
+            return f"Car {self.nombre}, color {self.color}: (x={self.x}, velocidad={self.velocidad}, Auto siguiente: None con vel: '')"
+        return f"Car {self.nombre}, color {self.color}: (x={self.x}, velocidad={self.velocidad}, Auto siguiente: {self.next_car.nombre} con vel: {self.next_car.velocidad})"
     
-
-
 
 
 

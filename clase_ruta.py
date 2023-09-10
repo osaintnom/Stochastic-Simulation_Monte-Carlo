@@ -47,9 +47,7 @@ class Ruta:
         self.ln.set_data([], [])
         return self.ln,
 
-    def repr(self) -> str:
-        return f"Car {self.nombre}, color {self.color}: (x={self.x}, velocidad={self.velocidad}, vmax={self.vmax}, aceleracion={self.acelerar()} Auto siguiente: {self.next_car.nombre} con vel: {self.next_car.velocidad})"
-    
+ 
     def eliminar_choques(self,tiempo):
         
         inicio = time.time()
@@ -95,7 +93,7 @@ class Ruta:
                 pausa = random.randint(1, 3)
             except:
                 self.autos.append(Auto(0, 0, random.normalvariate(1, 0.5), random.choice(self.colores), 'Auto ' + str(len(self.autos) + 1), x_max=self.x_max, y_max=10, next_car= None,mean = random.normalvariate(2.22,0.5)))
-
+            print(str(self.autos[len(self.autos) - 1]))
             time.sleep(pausa)
 
 print('Creando autos...')
