@@ -25,11 +25,13 @@ class Auto:
             self.aceleracion_max = 0.22
 
         self.frenado_max = random.gammavariate(0.4,0.1)
-        if self.frenado_max > 0.6:
-            self.frenado_max = 0.6
+        if self.frenado_max > 0.4:
+            self.frenado_max = 0.4
 
         self.colision = False
-         
+        self.tiempo_inicio = time.time()
+        self.tiempo_terminar = None
+        self.historic_velocidad = []
         # agregar velocidad maxima?
 
         # Genera un hilo para acelerar el auto
@@ -65,38 +67,42 @@ class Auto:
 
     def avanzar(self):
         if self.colision == True:
+            print("Choque!")
             return
-        # si chocaste y frenaste, volves a arrancar
-        if self.velocidad == 0:
-            self.velocidad = 1
-        
-        try:
-            #si lo estas chocando frena
-            if self.x >= self.next_car.x -2:
-                self.velocidad = 0
-                self.colision = True
-                self.next_car.colision = True
-                self.x = self.next_car.x
-            #si estas a menos de 10 de distancia desacelera
-            # elif self.x >= self.next_car.x - 15:
-            #     self.x += self.velocidad /10 
-            # elif self.x >= self.next_car.x - 30:
-            #     self.x += self.velocidad /4  
+        else:
+            # si chocaste y frenaste, volves a arrancar
+            if self.velocidad == 0:
+                self.velocidad = 1
+            
+            try:
+                #si lo estas chocando frena
+                if self.x >= self.next_car.x -2:
+                    self.velocidad = 0
+                    self.colision = True
+                    self.next_car.colision = True
+                    # self.x = self.next_car.x
+                #si estas a menos de 10 de distancia desacelera
+                # elif self.x >= self.next_car.x - 15:
+                #     self.x += self.velocidad /10 
+                # elif self.x >= self.next_car.x - 30:
+                #     self.x += self.velocidad /4  
 
-            #caso normla acelera en base a la velocidad aleotoria
-            else:
+                #caso normla acelera en base a la velocidad aleotoria
+                else:
+                    self.x += self.velocidad
+            except:
                 self.x += self.velocidad
-        except:
-            self.x += self.velocidad
-        # if self.x > self.x_max:
-        #     self.x = self.x_max
-        
-        if self.next_car != None and self.x > self.next_car.x:
-            self.x = self.next_car.x
+            # if self.x > self.x_max:
+            #     self.x = self.x_max
+            
+            self.historic_velocidad.append(self.velocidad)
+            if self.next_car != None and self.x > self.next_car.x:
+                self.x = self.next_car.x
 
     def __str__(self):
         if self.next_car == None:
             return f"Car {self.nombre}, color {self.color}: (x={self.x}, velocidad={self.velocidad}, Auto siguiente: None con vel: '')"
+        print('bien')
         return f"Car {self.nombre}, color {self.color}: (x={self.x}, velocidad={self.velocidad}, Auto siguiente: {self.next_car.nombre} con vel: {self.next_car.velocidad})"
     
 
@@ -106,10 +112,8 @@ class Auto:
 
         while self.x < self.x_max and self.colision == False:
             
-
             # se desconcentra 
             
-
             if self.next_car == None:
                 if self.velocidad - self.mean < self.mean/10:
                     acelerar = random.gammavariate(0.15, 1)
@@ -131,7 +135,7 @@ class Auto:
                     tiempo = 100
 
                 tiempo = (dist/(self.velocidad - vel_n))/10
-                if tiempo > 0 and tiempo < 1:
+                if tiempo > 0 and tiempo < 10:
                     frenado = 1/(tiempo**10)  * (-1 * random.lognormvariate(5,1))  
                     if frenado < -self.frenado_max:
                         print('esto')
@@ -187,9 +191,11 @@ class Auto:
             chance = random.uniform(0,1)
             if chance < 0.05:
                 time.sleep(0.5)
-            elif chance < 0.055:
+            elif chance < 0.03:
                 time.sleep(1)
-            elif chance < 0.057:
+            elif chance < 0.01:
                 time.sleep(2)
             else:
                 time.sleep(random.uniform(self.reaction_time_mean - 0.1, self.reaction_time_mean + 0.1))
+        if self.x >= self.x_max:
+            self.tiempo_terminar= time.time() - self.tiempo_inicio
