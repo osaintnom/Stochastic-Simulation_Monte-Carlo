@@ -25,8 +25,8 @@ class Auto:
             self.aceleracion_max = 0.22
 
         self.frenado_max = random.gammavariate(0.4,0.1)
-        if self.frenado_max > 0.4:
-            self.frenado_max = 0.4
+        if self.frenado_max > 0.8:
+            self.frenado_max = 0.8
         self.quieto = False
         self.colision = False
         self.tiempo_inicio = time.time()
@@ -79,7 +79,7 @@ class Auto:
             
             try:
                 #si lo estas chocando frena
-                if self.x >= self.next_car.x -5:
+                if self.x >= self.next_car.x -1:
                     self.velocidad = 0
                     choque_yo = th.Thread(target=self.chocaste, args=())
                     choque_yo.start()

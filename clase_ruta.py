@@ -26,6 +26,8 @@ class Ruta:
         self.crashes = []
         self.historic_ids = []
         self.collision_count = 0
+        self.finished_count = 0
+        self.cant_total_autos = 0
 
         self.historic_velocities = []
         self.historic_accelerations = []
@@ -63,11 +65,13 @@ class Ruta:
         self.autos.append(Auto(0, 0, random.normalvariate(2.7, 0.5), random.choice(self.colores),
                                str(incial_nombre) + str(len(self.autos) + 1),
                                x_max=self.x_max, y_max=10, mean=random.normalvariate(2.7, 0.5)))
+        self.cant_total_autos += 1
 
         # Create text annotations
         self.collision_text = self.ax.annotate('', xy=(10, 0.8), fontsize=12, color='red')
         self.car_text = self.ax.annotate('', xy=(10, 0.7), fontsize=12, color='blue')
         self.finished_text = self.ax.annotate('', xy=(10, 0.6), fontsize=12, color='green')
+        self.cant_total_autos_text = self.ax.annotate('', xy=(10, 0.5), fontsize=12, color='black')
 
         # Start threads for generating cars and removing collisions
         threading_autos = th.Thread(target=self.generar_autos, args=(tiempo,))
@@ -92,6 +96,7 @@ class Ruta:
                 elif auto.x > self.x_max:
                     self.historic_velocities.append(sum(auto.historic_velocidad)/len(auto.historic_velocidad))
                     self.historic_trip_duration.append(auto.tiempo_terminar)
+                    self.finished_count += 1
                     choques.append(auto)
             for auto in choques:
                 self.autos.remove(auto)
@@ -111,9 +116,6 @@ class Ruta:
             self.xdata.append(auto.x)
             self.ydata.append(auto.y)
 
-            # Check if a car crosses the finish line
-            if auto.x == self.x_max and not auto.colision:
-                self.finished_count += 1
 
             # Check for collisions and update collision count
 
@@ -123,11 +125,12 @@ class Ruta:
         self.collision_text.set_text(f'Collisions: {self.collision_count}')
         self.car_text.set_text(f'Car Count: {car_count}')
         self.finished_text.set_text(f'Finished Count: {self.finished_count}')
+        self.cant_total_autos_text.set_text(f'Total Cars Count: {self.cant_total_autos}')  # Update total cars text
         self.finished_text.set_position((10, 0.6))
 
         self.ln.set_data(self.xdata, self.ydata)
-        return self.ln, self.collision_text, self.car_text, self.finished_text
-
+        return self.ln, self.collision_text, self.car_text, self.finished_text, self.cant_total_autos_text
+    
     def animar(self):
         ani = animation.FuncAnimation(
             self.fig, self.update, frames=np.linspace(0, 100, 100), init_func=self.init, blit=True, interval=100, repeat=True
@@ -137,6 +140,8 @@ class Ruta:
     def generar_autos(self, tiempo):
         inicio = time.time()
         while time.time() - inicio < tiempo:
+            pausa = random.randint(1, 3)
+            time.sleep(pausa)
             nombre = np.random.randint(0, 1000000)
             while nombre in self.historic_ids:
                 nombre = np.random.randint(0, 1000000)
@@ -152,9 +157,9 @@ class Ruta:
                 self.autos.append(Auto(0, 0, random.normalvariate(2.7, 0.5), random.choice(self.colores),
                                     'Auto ' + str(nombre),
                                     x_max=self.x_max, y_max=10, next_car=None, mean=random.normalvariate(2.7, 0.5)))
-            pausa = random.randint(1, 3)
+            self.cant_total_autos += 1
             print(str(self.autos[-1]))
-            time.sleep(pausa)
+            
 
 print('Creando autos...')
 G_P = Ruta()
