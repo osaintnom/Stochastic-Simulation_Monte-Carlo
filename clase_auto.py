@@ -31,7 +31,7 @@ class Auto:
         self.quieto_count = 0
         self.colision = False
         self.tiempo_inicio = time.time()
-        self.tiempo_terminar = None
+        self.tiempo_terminar = 0
         self.historic_velocidad = []
         # agregar velocidad maxima?
 
@@ -45,8 +45,12 @@ class Auto:
         self.colision = True
     def avanzar(self):
         if self.colision == True:
-            print("_"*10)
-            print(f'Auto {self.nombre} choco con el auto {self.next_car.nombre}')
+            if self.next_car != None:
+                print("_"*10)
+                print(f'Auto {self.nombre} choco con el auto {self.next_car.nombre}')
+            else:
+                print("_"*10)
+                print(f'Auto {self.nombre} choco y era el primero')
             return
         elif self.quieto == True:
             # aca deberia frenar ahasta llegar a 0 
@@ -57,7 +61,7 @@ class Auto:
             
             try:
                 #si lo estas chocando frena
-                if self.x >= self.next_car.x -1:
+                if self.x >= self.next_car.x -3:
                     self.velocidad = 0
                     choque_yo = th.Thread(target=self.chocaste, args=())
                     choque_yo.start()
@@ -104,13 +108,12 @@ class Auto:
             
             if self.next_car == None:
                 if self.velocidad - self.mean < self.mean/10:
-                    acelerar = random.gammavariate(0.5, 1)
+                    acelerar = random.gammavariate(0.15, 1)
                     if acelerar > self.aceleracion_max:
                         acelerar = self.aceleracion_max
                     self.velocidad = self.velocidad + acelerar
                 else:
-                    print('acelerea primero')
-                    acelerar = random.normalvariate(0, 1)
+                    acelerar = random.normalvariate(0, 0.25)
                     if acelerar > self.aceleracion_max:
                         acelerar = self.aceleracion_max
                     self.velocidad = self.velocidad + acelerar
@@ -188,5 +191,5 @@ class Auto:
                 time.sleep(2)
             else:
                 time.sleep(random.uniform(self.reaction_time_mean - 0.1, self.reaction_time_mean + 0.1))
-        if self.x >= self.x_max:
-            self.tiempo_terminar= time.time() - self.tiempo_inicio
+        if self.x >= self.x_max or self.colision:
+            self.tiempo_terminar = time.time() - self.tiempo_inicio
