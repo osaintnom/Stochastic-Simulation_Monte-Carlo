@@ -19,12 +19,12 @@ class Auto:
         self.mean = mean
         self.delta = delta
         self.alpha = alpha
-        self.reaction_time_mean = random.uniform(0.1,0.3)
+        self.reaction_time_mean = random.uniform(0.01,0.03)
         self.aceleracion_max = random.gammavariate(0.1,0.05)
         if self.aceleracion_max > 0.22:
             self.aceleracion_max = 0.22
 
-        self.frenado_max = random.gammavariate(0.4,0.1)
+        self.frenado_max = random.gammavariate(0.6,0.1)
         if self.frenado_max > 0.8:
             self.frenado_max = 0.8
         self.quieto = False
@@ -41,7 +41,7 @@ class Auto:
 
 
     def chocaste(self):
-        time.sleep(0.5)
+        time.sleep(0.8)
         self.colision = True
     def avanzar(self):
         if self.colision == True:
@@ -50,7 +50,7 @@ class Auto:
                 print(f'Auto {self.nombre} choco con el auto {self.next_car.nombre}')
             else:
                 print("_"*10)
-                print(f'Auto {self.nombre} choco y era el primero')
+                print(f'Auto {self.nombre} choco en cadena')
             return
         elif self.quieto == True:
             # aca deberia frenar ahasta llegar a 0 
@@ -125,8 +125,8 @@ class Auto:
                 dist = self.next_car.x - self.x
                 if self.velocidad == vel_n:
                     tiempo = 100
-
-                tiempo = (dist/(self.velocidad - vel_n))/10
+                else:
+                    tiempo = (dist/(self.velocidad - vel_n))
                 if tiempo > 0 and tiempo < 10:
                     frenado = 1/(tiempo**10)  * (-1 * random.lognormvariate(5,1))  
                     # print(f'freando del auto {self.nombre}: {frenado}')
@@ -147,7 +147,10 @@ class Auto:
             else:
                 vel_n = self.next_car.velocidad
                 dist = self.next_car.x - self.x
-                tiempo = (dist/(self.velocidad - vel_n))/10
+                if self.velocidad == vel_n:
+                    tiempo = 100
+                else:
+                    tiempo = (dist/(self.velocidad - vel_n))
                 if tiempo > 0 and tiempo < 3:
                     frenado = 1/(tiempo**10)  * (-1 * random.lognormvariate(5,1))  
                     # print(f'freando del auto {self.nombre}: {frenado}')
@@ -190,6 +193,7 @@ class Auto:
             elif chance < 0.058:
                 time.sleep(2)
             else:
-                time.sleep(random.uniform(self.reaction_time_mean - 0.1, self.reaction_time_mean + 0.1))
+                time.sleep(random.uniform(self.reaction_time_mean - 0.01, self.reaction_time_mean + 0.01))
+
         if self.x >= self.x_max or self.colision:
             self.tiempo_terminar = time.time() - self.tiempo_inicio

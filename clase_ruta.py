@@ -9,7 +9,7 @@ import time
 
 
 class Ruta:
-    def __init__(self, autos=[], tiempo=1000, x_max=2500, y_max=10):
+    def __init__(self, autos=[], tiempo=1000, x_max=500, y_max=10):
         self.autos = autos
         self.x_max = x_max
         self.finished_count = 0  # Track the number of cars that have finished
@@ -21,7 +21,7 @@ class Ruta:
         self.ax.grid()
         self.ax.set_title('Ruta de autos')
         self.ax.set_xlabel('Posición en x')
-        self.ax.set_xticks([])  # Remove x-axis labels
+        self.ax.set_xticks([0,x_max])  # Remove x-axis labels
         # Set grid lines only at y=0, y=0.25, and y=-0.25
         self.ax.set_yticks([-0.25, 0, 0.25])
         self.ax.yaxis.grid(True, linestyle='--', which='major', color='gray', alpha=0.7)
@@ -52,9 +52,9 @@ class Ruta:
         self.historic_ids.append(incial_nombre)
 
         # Generate the initial car
-        self.autos.append(Auto(0, 0, random.normalvariate(8, 0.5), random.choice(self.colores),
+        self.autos.append(Auto(0, 0, random.normalvariate(2.2, 0.5), random.choice(self.colores),
                                incial_nombre,
-                               x_max=self.x_max, y_max=10, mean=random.normalvariate(8, 0.5)))
+                               x_max=self.x_max, y_max=10, mean=random.normalvariate(2.2, 0.5)))
         self.cant_total_autos += 1
 
         # Create text annotations
@@ -102,7 +102,8 @@ class Ruta:
                     #agregar al array # [auto.nombre, np.mean(auto.historic_velocidad), auto.tiempo_terminar, auto.colision, auto.reaction_time, auto.quieto_count]
                     self.guardar_datos_auto(auto)
                     choques.append(auto)
-                    self.collision_count += 1
+                    if auto.x > 50:
+                        self.collision_count += 1
                 elif auto.x > self.x_max:
                     self.historic_velocities.append(np.mean(auto.historic_velocidad))
                     self.historic_trip_duration.append(auto.tiempo_terminar)
@@ -138,7 +139,7 @@ class Ruta:
         self.car_text.set_text(f'Car Count: {car_count}')
         self.finished_text.set_text(f'Finished Count: {self.finished_count}')
         self.cant_total_autos_text.set_text(f'Total Cars Count: {self.cant_total_autos}')  # Update total cars text
-        self.ave_time_text.set_text(f'Average Trip Duration: {self.get_avg_trip_duration():.2f} segs en hacer 2.5km')
+        self.ave_time_text.set_text(f'Average Trip Duration: {self.get_avg_trip_duration():.2f} segs en hacer 200m')
         self.ave_v_text.set_text(f'Average Velocity: {self.get_avg_v():.2f} m/s')
         # self.finished_text.set_position((10, 0.6))
 
@@ -162,16 +163,16 @@ class Ruta:
                 nombre = np.random.randint(0, 1000000)
             try:
                 self.historic_ids.append(nombre)
-                self.autos.append(Auto(0, 0, random.normalvariate(8, 0.5), random.choice(self.colores),
+                self.autos.append(Auto(0, 0, random.normalvariate(2.2, 0.5), random.choice(self.colores),
                                     nombre,
-                                    x_max=self.x_max, y_max=10, next_car=self.autos[-1], mean=random.normalvariate(8, 0.5)))
+                                    x_max=self.x_max, y_max=10, next_car=self.autos[-1], mean=random.normalvariate(2.2, 0.5)))
                 
             except:
                 print('error')
                 self.historic_ids.append(nombre)
-                self.autos.append(Auto(0, 0, random.normalvariate(8, 0.5), random.choice(self.colores),
+                self.autos.append(Auto(0, 0, random.normalvariate(2.2, 0.5), random.choice(self.colores),
                                     + nombre,
-                                    x_max=self.x_max, y_max=10, next_car=None, mean=random.normalvariate(8, 0.5)))
+                                    x_max=self.x_max, y_max=10, next_car=None, mean=random.normalvariate(2.2, 0.5)))
             self.cant_total_autos += 1
             # print(str(self.autos[-1]))
         
