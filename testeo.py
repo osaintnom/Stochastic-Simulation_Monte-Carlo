@@ -6,6 +6,7 @@ from random import randint
 from typing import Optional
 
 PRECISION = 100
+
 class Car:
     def __init__(
         self,
@@ -41,11 +42,23 @@ class Car:
             init_frame (int, optional): Initial frame for the car. Defaults to None.
             car_id (int, optional): Unique identifier for the car. Defaults to None.
         """
+        self.x = x
+        self.v = v / 3.6  # Convert velocity to m/s
+        self.vel_max = vel_max / 3.6  # Convert velocity to m/s
+        self.a = a
+        self.amax = amax
+        self.length = length
+        self.tr = tr
+        self.vd = vd / 3.6  # Convert velocity to m/s
+        self.b_car = bc
+        self.f_car = fc
+        self.will_measure = will_measure
+        self.init_frame = init_frame
+        self.car_id = car_id
 
-        # Initialize car properties
-        self.id = np.random.randint(0, 1000000) if car_id is None else car_id
-        self.t = 0
-        # ... (initialize other car properties)
+        # Initialize other car properties and state
+        self.increased_attention = False
+        self.decresed_attention = False
 
     def __str__(self):
         """
@@ -54,7 +67,7 @@ class Car:
         Returns:
             str: String representation of the car.
         """
-        return f"Car(x={self.x}, v={self.v}, vel_max={self.vel_max}, a={self.a}, l={self.length}, tr={self.get_reaction_time()}, vd={self.desired_velocity}, fc={self.f_car}, bc={self.b_car})"
+        return f"Car(x={self.x}, v={self.v * 3.6}, vel_max={self.vel_max * 3.6}, a={self.a}, l={self.length}, tr={self.get_reaction_time()}, vd={self.vd * 3.6}, fc={self.f_car}, bc={self.b_car})"
 
     def __repr__(self):
         """
@@ -63,57 +76,43 @@ class Car:
         Returns:
             str: String representation of the car.
         """
-        return f"Car(x={self.x}, v={self.v}, vel_max={self.vel_max}, a={self.a}, l={self.length}, tr={self.get_reaction_time()}, vd={self.desired_velocity}, fc={self.f_car}, bc={self.b_car})"
+        return f"Car(x={self.x}, v={self.v * 3.6}, vel_max={self.vel_max * 3.6}, a={self.a}, l={self.length}, tr={self.get_reaction_time()}, vd={self.vd * 3.6}, fc={self.f_car}, bc={self.b_car})"
 
     def check_crash(self):
         """
         Check if the car has crashed with the front car and update its status.
         """
-        if (
-            not self.crashed
-            and self.distance_to_front_car() is not None
-            and self.distance_to_front_car() <= 0
-        ):
-            print(
-                f"Car {self.id} crashed at frame {self.t} in position {self.x} to car {self.f_car.id}"
-            )
-            self.crashed = True
+        if self.f_car and self.collides():
+            # Update car status due to crash
+            pass
 
     def check_rear_end(self):
         """
         Check if the car has been rear-ended and update its status.
         """
-        if (
-            not self.crashed
-            and self.distance_to_back_car() is not None
-            and self.distance_to_back_car() <= 0
-        ):
-            print(f"Car {self.id} rear-ended at frame {self.t} in position {self.x}")
-            self.crashed = True
+        if self.b_car and self.b_car.collides():
+            # Update car status due to rear-end collision
+            pass
 
     def accelerate(self):
         """
         Accelerate the car.
         """
-        if self.a < 0:
-            self.a = 0
-        self.a += self.throttle_acc
-        if self.a > self.amax:
-            self.a = self.amax
+        if self.v < self.vel_max:
+            self.v = min(self.v + self.a, self.vel_max)
 
     def decelerate(self):
         """
         Decelerate the car.
         """
-        self.a -= self.throttle_acc
-        if self.a < -9.81:
-            self.a = -9.81
+        if self.v > 0:
+            self.v = max(self.v - self.a, 0)
 
     def stop(self):
         """
         Stop the car.
         """
-        self.stopping = True
+        self.v = 0
 
     def keep_velocity(self):
         """
@@ -128,8 +127,8 @@ class Car:
         Returns:
             float: Distance to the front car (front car's position - car's position).
         """
-        if self.f_car is not None:
-            return self.f_car.x - (self.x + self.length)
+        if self.f_car:
+            return self.f_car.x - self.x
         else:
             return None
 
@@ -140,8 +139,8 @@ class Car:
         Returns:
             float: Distance to the back car (car's position - back car's position).
         """
-        if self.b_car is not None:
-            return self.x - (self.b_car.x + self.b_car.length)
+        if self.b_car:
+            return self.x - self.b_car.x
         else:
             return None
 
@@ -159,7 +158,6 @@ class Car:
         Bring the car to a complete stop.
         """
         self.v = 0
-        self.a = 0
 
     def set_initial_frame(self, frame: int):
         """
@@ -195,45 +193,20 @@ class Car:
         Args:
             frame (int): Current frame number.
         """
-        self.check_crash()
-        self.check_rear_end()
-
-        if self.has_collided():
-            self.dead_stop()
-            self.action_queue = []
-
-        else:
-            # Update position
-            self.x = self.x + self.v / PRECISION
-
-            # Update velocity
-            self.v = self.v + self.a / PRECISION
-
-            if self.stopping:
-                self.v -= self.stopping_acc
-
-            if self.v > self.vel_max:
-                self.v = self.vel_max
-
-            self.v = max(0, self.v)
-
-            if self.v == 0:
-                self.stopping = False
-
-            # Decision making
-            if np.random.uniform() < 0.1:
-                self.decresed_attention = True
-
-            self.custom_behavior()
-
-            self.behaviour(frame)
-
-            # Resolve actions in the current frame
-            self.resolve_actions(frame)
-
-        self.t += 1
+        self.resolve_actions(frame)
+        self.behaviour(frame)
+        # Update car state based on frame
 
     def resolve_actions(self, frame):
+        """
+        Resolves actions in the action queue for the car.
+
+        Args:
+            frame (int): The current frame of the simulation.
+
+        Returns:
+            None
+        """
         for action, action_frame in self.action_queue:
             if frame <= action_frame:
                 p = np.random.uniform()
@@ -249,19 +222,43 @@ class Car:
         ]
 
     def increase_attention(self):
+        """
+        Increases the driver's attention level.
+
+        Returns:
+            None
+        """
         self.increased_attention = True
 
     def default_attention(self):
+        """
+        Resets the driver's attention level to the default value.
+
+        Returns:
+            None
+        """
         self.increased_attention = False
 
     def get_reaction_time(self):
+        """
+        Get the driver's reaction time based on their attention level.
+
+        Returns:
+            float: The driver's reaction time in seconds.
+        """
         if self.increased_attention:
-            return self.reaction_time / 2
+            return self.tr / 2
         elif self.decresed_attention:
-            return self.reaction_time * 1.5
-        return self.reaction_time
+            return self.tr * 1.5
+        return self.tr
 
     def crashes_upfront(self):
+        """
+        Checks if there are crashes happening in front of the car.
+
+        Returns:
+            bool: True if there are crashes upfront, False otherwise.
+        """
         if self.highway:
             for car in self.highway.get_cars():
                 if car.x > self.x and car.collides():
@@ -269,11 +266,25 @@ class Car:
         return False
 
     def custom_behavior(self):
+        """
+        Defines the car's custom behavior.
+
+        Returns:
+            None
+        """
         if self.x > 8000 and self.x < 9000 and np.random.poisson(10) == 1:
             self.v = 10000
 
     def behaviour(self, frame):
-        # If there are cars in front of me, I will slow down
+        """
+        Defines the car's behavior based on the current frame and surrounding conditions.
+
+        Args:
+            frame (int): The current frame of the simulation.
+
+        Returns:
+            None
+        """
         if self.crashes_upfront():
             if not self.increased_attention:
                 self.action_queue.append((self.increase_attention, frame + 1))
@@ -287,14 +298,12 @@ class Car:
                 self.action_queue.append((self.default_attention, frame + 1))
 
         if self.f_car is not None and self.f_car.a < 0 and self.v > 0:
-            # If the front car is braking, I will brake
             self.action_queue.append(
                 (self.decelerate, frame + self.get_reaction_time())
             )
 
         if self.f_car is not None:
             if self.v < self.desired_velocity:
-                # If front car has crashed, stop
                 if self.f_car.has_collided():
                     self.action_queue.append(
                         (self.stop, frame + self.get_reaction_time())
@@ -304,7 +313,6 @@ class Car:
                         (self.decelerate, frame + self.get_reaction_time())
                     )
                 elif self.distance_to_front_car() <= 5 * self.v:
-                    # LEQ Two seconds of distance: Decelerate
                     self.action_queue.append(
                         (self.decelerate, frame + self.get_reaction_time())
                     )
@@ -313,7 +321,6 @@ class Car:
                         (self.accelerate, frame + self.get_reaction_time())
                     )
             else:
-                # If front car has crashed, stop
                 if self.f_car.has_collided():
                     if self.distance_to_front_car() <= self.a / 2:
                         self.action_queue.append(
@@ -325,7 +332,6 @@ class Car:
                         )
 
                 elif self.distance_to_front_car() <= 5 * self.v:
-                    # LEQ Two seconds of distance: Decelerate
                     self.action_queue.append(
                         (self.decelerate, frame + self.get_reaction_time())
                     )
@@ -335,7 +341,26 @@ class Car:
                     (self.accelerate, frame + self.get_reaction_time())
                 )
 
-# Remaining Car class methods are unchanged.
+    def collides(self):
+        """
+        Checks if the car has collided with another car.
+
+        Returns:
+            bool: True if the car has collided, False otherwise.
+        """
+        # Implement collision logic
+        pass
+
+    def has_collided(self):
+        """
+        Checks if the car has been involved in a collision.
+
+        Returns:
+            bool: True if the car has been involved in a collision, False otherwise.
+        """
+        # Implement collision logic
+        pass
+
 
 class Highway:
     def __init__(self, length: float):
@@ -640,359 +665,5 @@ if __name__ == "__main__":
 
 
 
-# class Car:
-#     def __init__(
-#         self,
-#         x: float,
-#         v: float,
-#         vel_max: float,
-#         a: float,
-#         amax: float,
-#         length: float,
-#         tr: float,
-#         vd: float,
-#         bc: "Car",
-#         fc: Optional["Car"] = None,
-#         will_measure: Optional[bool] = False,
-#         init_frame: Optional[int] = None,
-#         car_id: Optional[int] = None,
-#     ):
-#         """
-#         Initialize a car object.
-
-#         Args:
-#             x (float): Initial position of the car.
-#             v (float): Initial velocity of the car (in km/h).
-#             vel_max (float): Maximum velocity of the car (in km/h).
-#             a (float): Acceleration of the car (in m/s^2).
-#             amax (float): Maximum acceleration of the car (in m/s^2).
-#             length (float): Length of the car (in meters).
-#             tr (float): Reaction time of the driver (in seconds).
-#             vd (float): Desired velocity of the car (in km/h).
-#             bc (Car): Back car (previous car in the queue).
-#             fc (Car, optional): Front car (next car in the queue). Defaults to None.
-#             will_measure (bool, optional): Whether the car will measure. Defaults to False.
-#             init_frame (int, optional): Initial frame for the car. Defaults to None.
-#             car_id (int, optional): Unique identifier for the car. Defaults to None.
-#         """
-
-#         # Initialize car properties
-#         self.id = np.random.randint(0, 1000000) if car_id is None else car_id
-#         self.t = 0
-#         # ... (initialize other car properties)
-
-#     def __str__(self):
-#         """
-#         Return a string representation of the car.
-
-#         Returns:
-#             str: String representation of the car.
-#         """
-#         return f"Car(x={self.x}, v={self.v}, vel_max={self.vel_max}, a={self.a}, l={self.length}, tr={self.get_reaction_time()}, vd={self.desired_velocity}, fc={self.f_car}, bc={self.b_car})"
-
-#     def __repr__(self):
-#         """
-#         Return a string representation of the car.
-
-#         Returns:
-#             str: String representation of the car.
-#         """
-#         return f"Car(x={self.x}, v={self.v}, vel_max={self.vel_max}, a={self.a}, l={self.length}, tr={self.get_reaction_time()}, vd={self.desired_velocity}, fc={self.f_car}, bc={self.b_car})"
-
-#     def check_crash(self):
-#         """
-#         Check if the car has crashed with the front car and update its status.
-#         """
-#         # ... (implement crash checking logic)
-
-#     def check_rear_end(self):
-#         """
-#         Check if the car has been rear-ended and update its status.
-#         """
-#         # ... (implement rear-end checking logic)
-
-#     def accelerate(self):
-#         """
-#         Accelerate the car.
-#         """
-#         # ... (implement acceleration logic)
-
-#     def decelerate(self):
-#         """
-#         Decelerate the car.
-#         """
-#         # ... (implement deceleration logic)
-
-#     def stop(self):
-#         """
-#         Stop the car.
-#         """
-#         # ... (implement stopping logic)
-
-#     def keep_velocity(self):
-#         """
-#         Keep the current velocity of the car.
-#         """
-#         pass
-
-#     def distance_to_front_car(self) -> Optional[float]:
-#         """
-#         Calculate the distance to the front car.
-
-#         Returns:
-#             float: Distance to the front car (front car's position - car's position).
-#         """
-#         # ... (implement distance calculation logic)
-
-#     def distance_to_back_car(self) -> Optional[float]:
-#         """
-#         Calculate the distance to the back car.
-
-#         Returns:
-#             float: Distance to the back car (car's position - back car's position).
-#         """
-#         # ... (implement distance calculation logic)
-
-#     def get_position(self):
-#         """
-#         Get the current position of the car.
-
-#         Returns:
-#             float: Current position of the car.
-#         """
-#         return self.x
-
-#     def dead_stop(self):
-#         """
-#         Bring the car to a complete stop.
-#         """
-#         # ... (implement complete stop logic)
-
-#     def set_initial_frame(self, frame: int):
-#         """
-#         Set the initial frame for the car.
-
-#         Args:
-#             frame (int): Initial frame number.
-#         """
-#         self.init_frame = frame
-
-#     def get_initial_frame(self):
-#         """
-#         Get the initial frame for the car.
-
-#         Returns:
-#             int: Initial frame number.
-#         """
-#         return self.init_frame
-
-#     def set_highway(self, highway):
-#         """
-#         Set the highway reference for the car.
-
-#         Args:
-#             highway: Reference to the highway object.
-#         """
-#         self.highway = highway
-
-#     def update(self, frame: int):
-#         """
-#         Update the car's state for the given frame.
-
-#         Args:
-#             frame (int): Current frame number.
-#         """
-#         # ... (implement car state update logic)
-
-#     # ... (add other car methods as needed)
-
-# class Highway:
-#     def __init__(self, length: float):
-#         """
-#         Initialize a highway simulation.
-
-#         Args:
-#             length (float): Length of the highway (in meters).
-#         """
-
-#         # Initialize highway properties
-#         self.length = length
-#         self.cars = []
-#         self.time = 0
-#         self.crashes = []
-#         self.crash_remove_delay = 5000
-#         self.historic_ids = []
-
-#     def get_front_car(self):
-#         """
-#         Get the front car on the highway.
-
-#         Returns:
-#             Car: Front car object or None if no cars on the highway.
-#         """
-#         # ... (implement front car retrieval logic)
-
-#     def get_back_car(self):
-#         """
-#         Get the back car on the highway.
-
-#         Returns:
-#             Car: Back car object or None if no cars on the highway.
-#         """
-#         # ... (implement back car retrieval logic)
-
-#     def add_car(self, car: Car):
-#         """
-#         Add a car to the highway.
-
-#         Args:
-#             car (Car): Car object to be added to the highway.
-#         """
-#         # ... (implement car addition logic)
-
-#     def remove_car(self, car: Car):
-#         """
-#         Remove a car from the highway.
-
-#         Args:
-#             car (Car): Car object to be removed from the highway.
-#         """
-#         # ... (implement car removal logic)
-
-#     def tow_cars(self, now: bool = False):
-#         """
-#         Tow crashed cars from the highway.
-
-#         Args:
-#             now (bool, optional): If True, tow cars immediately. Defaults to False.
-#         """
-#         # ... (implement car towing logic)
-
-#     def update(self, frame: int):
-#         """
-#         Update the state of cars on the highway for the given frame.
-
-#         Args:
-#             frame (int): Current frame number.
-#         """
-#         # ... (implement highway state update logic)
-
-#     def has_crashes(self) -> bool:
-#         """
-#         Check if there are crashes on the highway.
-
-#         Returns:
-#             bool: True if there are crashes, False otherwise.
-#         """
-#         # ... (implement crash detection logic)
-
-#     def run(self, time: float):
-#         """
-#         Run the highway simulation for a specified duration.
-
-#         Args:
-#             time (float): Duration of the simulation (in seconds).
-#         """
-#         pass
-
-#     def measure(self):
-#         """
-#         Measure various statistics and properties of the highway and cars.
-#         """
-#         pass
-
-#     def plot(self):
-#         """
-#         Plot the current state of the highway and cars.
-#         """
-#         pass
-
-#     def get_cars(self):
-#         """
-#         Get a list of cars currently on the highway.
-
-#         Returns:
-#             List[Car]: List of car objects.
-#         """
-#         return self.cars
-
-#     def get_cars_positions(self):
-#         """
-#         Get the positions of cars on the highway.
-
-#         Returns:
-#             List[float]: List of car positions.
-#         """
-#         # ... (implement position retrieval logic)
-
-#     def get_cars_velocities(self):
-#         """
-#         Get the velocities of cars on the highway.
-
-#         Returns:
-#             List[float]: List of car velocities.
-#         """
-#         # ... (implement velocity retrieval logic)
-
-#     def get_cars_accelerations(self):
-#         """
-#         Get the accelerations of cars on the highway.
-
-#         Returns:
-#             List[float]: List of car accelerations.
-#         """
-#         # ... (implement acceleration retrieval logic)
-
-#     def get_cars_distances(self):
-#         """
-#         Get the distances between cars on the highway.
-
-#         Returns:
-#             List[float]: List of distances between cars.
-#         """
-#         pass
-
-#     def get_cars_times(self):
-#         """
-#         Get the elapsed times of cars on the highway.
-
-#         Returns:
-#             List[int]: List of elapsed times for cars.
-#         """
-#         # ... (implement elapsed time retrieval logic)
-
-#     def get_cars_reaction_times(self):
-#         """
-#         Get the reaction times of cars on the highway.
-
-#         Returns:
-#             List[float]: List of reaction times for cars.
-#         """
-#         pass
-
-#     def get_cars_desired_velocities(self):
-#         """
-#         Get the desired velocities of cars on the highway.
-
-#         Returns:
-#             List[float]: List of desired velocities for cars.
-#         """
-#         pass
-
-#     def get_cars_front_cars(self):
-#         """
-#         Get the front cars of cars on the highway.
-
-#         Returns:
-#             List[Car]: List of front car objects for cars.
-#         """
-#         pass
-
-#     def get_cars_back_cars(self):
-#         """
-#         Get the back cars of cars on the highway.
-
-#         Returns:
-#             List[Car]: List of back car objects for cars.
-#         """
-#         pass
+    # Plotting
+    fig, ax = plt.subplots(figsize=(10, 5))

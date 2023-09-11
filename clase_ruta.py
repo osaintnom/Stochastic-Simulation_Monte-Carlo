@@ -88,7 +88,7 @@ class Ruta:
                 if auto.colision == True:
                     self.historic_velocities.append(sum(auto.historic_velocidad)/len(auto.historic_velocidad))
                     choques.append(auto)
-                    self.collision_counts += 1/2
+                    self.collision_count += 1
                 elif auto.x > self.x_max:
                     self.historic_velocities.append(sum(auto.historic_velocidad)/len(auto.historic_velocidad))
                     self.historic_trip_duration.append(auto.tiempo_terminar)
@@ -141,14 +141,15 @@ class Ruta:
             try:
                 self.historic_ids.append(nombre)
                 self.autos.append(Auto(0, 0, random.normalvariate(2.7, 0.5), random.choice(self.colores),
-                                    'Auto ' + str(nombre + 1),
-                                    x_max=self.x_max, y_max=10, mean=random.normalvariate(2.7, 0.5)))
+                                    'Auto ' + str(nombre),
+                                    x_max=self.x_max, y_max=10, next_car=self.autos[-1], mean=random.normalvariate(2.7, 0.5)))
                 
             except:
                 print('error')
-                self.autos.append(Auto(0, 0, random.normalvariate(1, 0.5), random.choice(self.colores),
-                                       'Auto ' + str(len(self.autos) + 1), x_max=self.x_max, y_max=10,
-                                       next_car=None, mean=random.normalvariate(2.22, 0.5)))
+                self.historic_ids.append(nombre)
+                self.autos.append(Auto(0, 0, random.normalvariate(2.7, 0.5), random.choice(self.colores),
+                                    'Auto ' + str(nombre),
+                                    x_max=self.x_max, y_max=10, next_car=None, mean=random.normalvariate(2.7, 0.5)))
             pausa = random.randint(1, 3)
             print(str(self.autos[-1]))
             time.sleep(pausa)
