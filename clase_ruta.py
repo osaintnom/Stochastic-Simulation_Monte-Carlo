@@ -9,7 +9,7 @@ import time
 
 
 class Ruta:
-    def __init__(self, autos=[], tiempo=100, x_max=300, y_max=10):
+    def __init__(self, autos=[], tiempo=100, x_max=2500, y_max=10):
         self.autos = autos
         self.x_max = x_max
         self.finished_count = 0  # Track the number of cars that have finished
@@ -30,8 +30,10 @@ class Ruta:
         self.cant_total_autos = 0
 
         self.historic_velocities = []
-        self.historic_accelerations = []
         self.historic_trip_duration = []
+        self.data = pd.DataFrame(columns=['id', 'vel_mean', 'tiempo_terminar', 'colision', 'react_time', 'quieto_count'])
+        #hacer un array por Ruta donde tenga la ssiguientes columnas: id, vel_mean, tiempo_terminar, colision, react_time, quieto_count
+        #cada fila es un auto que termino 
 
 
         def __len__(self):
@@ -62,9 +64,9 @@ class Ruta:
         self.historic_ids.append(incial_nombre)
 
         # Generate the initial car
-        self.autos.append(Auto(0, 0, random.normalvariate(2.7, 0.5), random.choice(self.colores),
-                               str(incial_nombre) + str(len(self.autos) + 1),
-                               x_max=self.x_max, y_max=10, mean=random.normalvariate(2.7, 0.5)))
+        self.autos.append(Auto(0, 0, random.normalvariate(22, 0.5), random.choice(self.colores),
+                               incial_nombre,
+                               x_max=self.x_max, y_max=10, mean=random.normalvariate(8, 0.5)))
         self.cant_total_autos += 1
 
         # Create text annotations
@@ -90,13 +92,17 @@ class Ruta:
             choques = []
             for auto in self.autos[::-1]:
                 if auto.colision == True:
-                    self.historic_velocities.append(sum(auto.historic_velocidad)/len(auto.historic_velocidad))
+                    self.historic_velocities.append(np.mean(auto.historic_velocidad))
+                    #agregar al array # [auto.nombre, np.mean(auto.historic_velocidad), auto.tiempo_terminar, auto.colision, auto.reaction_time, auto.quieto_count]
+                    self.guardar_datos_auto(auto)
                     choques.append(auto)
                     self.collision_count += 1
                 elif auto.x > self.x_max:
-                    self.historic_velocities.append(sum(auto.historic_velocidad)/len(auto.historic_velocidad))
+                    self.historic_velocities.append(np.mean(auto.historic_velocidad))
                     self.historic_trip_duration.append(auto.tiempo_terminar)
                     self.finished_count += 1
+                    #agregar al array # auto.nombre(id), np.mean(auto.historic_velocidad), auto.tiempo_terminar, auto.colision, auto.reaction_time, auto.quieto_count
+                    self.guardar_datos_auto(auto)
                     choques.append(auto)
             for auto in choques:
                 self.autos.remove(auto)
@@ -136,6 +142,7 @@ class Ruta:
             self.fig, self.update, frames=np.linspace(0, 100, 100), init_func=self.init, blit=True, interval=100, repeat=True
         )
         plt.show()
+        
 
     def generar_autos(self, tiempo):
         inicio = time.time()
@@ -147,22 +154,41 @@ class Ruta:
                 nombre = np.random.randint(0, 1000000)
             try:
                 self.historic_ids.append(nombre)
-                self.autos.append(Auto(0, 0, random.normalvariate(2.7, 0.5), random.choice(self.colores),
-                                    'Auto ' + str(nombre),
-                                    x_max=self.x_max, y_max=10, next_car=self.autos[-1], mean=random.normalvariate(2.7, 0.5)))
+                self.autos.append(Auto(0, 0, random.normalvariate(22, 0.5), random.choice(self.colores),
+                                    nombre,
+                                    x_max=self.x_max, y_max=10, next_car=self.autos[-1], mean=random.normalvariate(8, 0.5)))
                 
             except:
                 print('error')
                 self.historic_ids.append(nombre)
-                self.autos.append(Auto(0, 0, random.normalvariate(2.7, 0.5), random.choice(self.colores),
-                                    'Auto ' + str(nombre),
+                self.autos.append(Auto(0, 0, random.normalvariate(22, 0.5), random.choice(self.colores),
+                                    + nombre,
                                     x_max=self.x_max, y_max=10, next_car=None, mean=random.normalvariate(2.7, 0.5)))
             self.cant_total_autos += 1
-            print(str(self.autos[-1]))
-            
+            # print(str(self.autos[-1]))
+        
+    def guardar_datos_auto(self, auto):
+        data_row = {
+            'id': auto.nombre,
+            'vel_mean': np.mean(auto.historic_velocidad),
+            'tiempo_terminar': auto.tiempo_terminar,
+            'colision': auto.colision,
+            'react_time': auto.reaction_time_mean,
+            'quieto_count': auto.quieto_count
+        }
+        self.data = pd.concat([self.data, pd.DataFrame([data_row])], ignore_index=True)
+        print(self.data.tail())
+        
 
 print('Creando autos...')
 G_P = Ruta()
 G_P.animar()
+# print(G_P.data)
+
 
 ## funcion de ordenar lista
+
+
+
+
+

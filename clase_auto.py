@@ -28,6 +28,7 @@ class Auto:
         if self.frenado_max > 0.8:
             self.frenado_max = 0.8
         self.quieto = False
+        self.quieto_count = 0
         self.colision = False
         self.tiempo_inicio = time.time()
         self.tiempo_terminar = None
@@ -37,41 +38,18 @@ class Auto:
         # Genera un hilo para acelerar el auto
         threading = th.Thread(target=self.acelerar, args=())
         threading.start()
-        
 
-    # def acelerar(self):
-
-
-    #     while self.x < self.x_max:
-    #         #aceleracion aleatoria sobre la velocidad del auto
-    #         # acelerar = abs(random.uniform(0, 3))
-    #         # acelerar = random.gammavariate(1, 1)
-    #         # self.velocidad = self.velocidad * acelerar
-
-    #         # #velocidad minima
-    #         # if self.velocidad < 0.5:
-    #         #     self.velocidad = 1
-    #         # time.sleep(0.2)
-    #         if self.next_car == None:
-    #             self.velocidad = self.velocidad + self.alpha * (self.mean - self.velocidad) + self.velocidad *self.delta* random.normalvariate(0, 2)    
-    #             if self.velocidad <0.2:
-    #                 self.velocidad = 0.2
-    #         elif (self.next_car.x - self.x) < 4:
-    #             self.velocidad = 0
-    #         else:
-    #             self.velocidad = self.velocidad + self.alpha * (self.mean - self.velocidad) + self.delta* random.normalvariate(0, 2)    -abs((10/(self.next_car.x - self.x))*random.normalvariate(0, 2))
-    #             if self.velocidad <0.2:
-    #                 self.velocidad = 0.2
-    #         time.sleep(0.2)
 
     def chocaste(self):
         time.sleep(0.5)
         self.colision = True
     def avanzar(self):
         if self.colision == True:
-            print("Choque!")
+            print("_"*10)
+            print(f'Auto {self.nombre} choco con el auto {self.next_car.nombre}')
             return
         elif self.quieto == True:
+            # aca deberia frenar ahasta llegar a 0 
             return
         else:
             # si chocaste y frenaste, volves a arrancar
@@ -86,6 +64,7 @@ class Auto:
                     choque_next = th.Thread(target=self.next_car.chocaste, args=())
                     choque_next.start()
                     self.quieto = True
+                    self.quieto_count += 1
                     self.next_car.quieto = True
                     
 
@@ -125,12 +104,13 @@ class Auto:
             
             if self.next_car == None:
                 if self.velocidad - self.mean < self.mean/10:
-                    acelerar = random.gammavariate(0.15, 1)
+                    acelerar = random.gammavariate(0.5, 1)
                     if acelerar > self.aceleracion_max:
                         acelerar = self.aceleracion_max
                     self.velocidad = self.velocidad + acelerar
                 else:
-                    acelerar = random.normalvariate(0, 0.25)
+                    print('acelerea primero')
+                    acelerar = random.normalvariate(0, 1)
                     if acelerar > self.aceleracion_max:
                         acelerar = self.aceleracion_max
                     self.velocidad = self.velocidad + acelerar
@@ -167,7 +147,7 @@ class Auto:
                 tiempo = (dist/(self.velocidad - vel_n))/10
                 if tiempo > 0 and tiempo < 3:
                     frenado = 1/(tiempo**10)  * (-1 * random.lognormvariate(5,1))  
-                    print(f'freando del auto {self.nombre}: {frenado}')
+                    # print(f'freando del auto {self.nombre}: {frenado}')
                     if frenado < -self.frenado_max:
                         print('esto')
                         frenado = -self.frenado_max
