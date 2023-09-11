@@ -97,7 +97,9 @@ class Ruta:
                 self.autos.remove(auto)
             for auto in self.autos[1:]:
                 auto.next_car = self.autos[self.autos.index(auto) - 1]
-            self.autos[0].next_car = None
+            if len(self.autos) > 0:
+                self.autos[0].next_car = None
+
 
             time.sleep(1)
 

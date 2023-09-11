@@ -27,7 +27,7 @@ class Auto:
         self.frenado_max = random.gammavariate(0.4,0.1)
         if self.frenado_max > 0.4:
             self.frenado_max = 0.4
-
+        self.quieto = False
         self.colision = False
         self.tiempo_inicio = time.time()
         self.tiempo_terminar = None
@@ -64,23 +64,32 @@ class Auto:
     #                 self.velocidad = 0.2
     #         time.sleep(0.2)
 
-
+    def chocaste(self):
+        time.sleep(0.5)
+        self.colision = True
     def avanzar(self):
         if self.colision == True:
             print("Choque!")
             return
+        elif self.quieto == True:
+            return
         else:
             # si chocaste y frenaste, volves a arrancar
-            if self.velocidad == 0:
-                self.velocidad = 1
-                print('arranco devuelta')
+
             
             try:
                 #si lo estas chocando frena
-                if self.x >= self.next_car.x -2:
+                if self.x >= self.next_car.x -5:
                     self.velocidad = 0
-                    self.colision = True
-                    self.next_car.colision = True
+                    choque_yo = th.Thread(target=self.chocaste, args=())
+                    choque_yo.start()
+                    choque_next = th.Thread(target=self.next_car.chocaste, args=())
+                    choque_next.start()
+                    self.quieto = True
+                    self.next_car.quieto = True
+                    
+
+                    
                     # self.x = self.next_car.x
                 #si estas a menos de 10 de distancia desacelera
                 # elif self.x >= self.next_car.x - 15:
