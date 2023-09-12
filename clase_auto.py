@@ -196,11 +196,11 @@ class Auto:
             # time.sleep(0.2)
             chance = random.uniform(0,1)
             if chance < 0.01:
-                time.sleep(0.5)
+                time.sleep(0.2)
             elif chance < 0.015:
-                time.sleep(1)
+                time.sleep(0.5)
             elif chance < 0.018:
-                time.sleep(2)
+                time.sleep(0.8)
             else:
                 time.sleep(random.uniform(self.reaction_time_mean - 0.01, self.reaction_time_mean + 0.01))
 
