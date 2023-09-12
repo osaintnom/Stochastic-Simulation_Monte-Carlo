@@ -9,7 +9,7 @@ import time
 
 
 class Ruta:
-    def __init__(self, autos=[], tiempo=10000, x_max=1000, y_max=10):
+    def __init__(self, autos=[], tiempo=10000, x_max=10000, y_max=10):
         self.autos = autos
         self.x_max = x_max
         self.finished_count = 0  # Track the number of cars that have finished
@@ -106,7 +106,7 @@ class Ruta:
                     #agregar al array # [auto.nombre, np.mean(auto.historic_velocidad), auto.tiempo_terminar, auto.colision, auto.reaction_time, auto.quieto_count]
                     self.guardar_datos_auto(auto)
                     
-                    if auto.x > 50:
+                    if auto.x > 500:
                         choques.append(auto)
                     
                     else:

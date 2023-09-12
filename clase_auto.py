@@ -96,7 +96,7 @@ class Auto:
                         acelerar = self.aceleracion_max
                     self.velocidad = self.velocidad + acelerar*0.1
                 else:
-                    acelerar = random.normalvariate(0, 0.25)
+                    acelerar = random.normalvariate(0, 0.5) + (self.mean - self.velocidad)/self.mean
                     if acelerar > self.aceleracion_max:
                         acelerar = self.aceleracion_max
                     self.velocidad = self.velocidad + acelerar*0.1
@@ -115,11 +115,11 @@ class Auto:
                     if self.velocidad < 0:
                         self.velocidad = 0
                 else:
-                    vel = self.velocidad
+                   
                     acelerar = random.lognormvariate(1, 1) * (2 * (self.mean - self.velocidad) / self.mean)
                     if acelerar > self.aceleracion_max:
                         acelerar = self.aceleracion_max
-                    self.velocidad = self.velocidad + frenado* 0.1
+                    self.velocidad = self.velocidad + acelerar* 0.1
             else:
                 vel_n = self.next_car.velocidad - 0.5
                 dist = self.next_car.x - self.x
@@ -135,12 +135,12 @@ class Auto:
                     if self.velocidad < 0:
                         self.velocidad = 0
                 else:
-                    acelerar = random.normalvariate(0, 0.5)
+                    acelerar = random.normalvariate(0, 0.5) + (self.mean - self.velocidad)/self.mean
                     if self.velocidad > 100:
                         acelerar = -abs(acelerar)
                     if acelerar > self.aceleracion_max:
                         acelerar = self.aceleracion_max
-                    self.velocidad = self.velocidad + frenado* 0.1
+                    self.velocidad = self.velocidad + acelerar* 0.1
                     if self.velocidad < 0:
                         self.velocidad = 0
 
