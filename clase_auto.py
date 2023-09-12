@@ -19,7 +19,7 @@ class Auto:
         self.mean = mean
         self.delta = delta
         self.alpha = alpha
-        self.reaction_time_mean = random.uniform(0.06,0.9)
+        self.reaction_time_mean = random.uniform(0.06,0.09)
         self.aceleracion_max = random.lognormvariate(0.3,0.05)
         if self.aceleracion_max > 0.42:
             self.aceleracion_max = 0.42
@@ -35,7 +35,7 @@ class Auto:
         self.tiempo_terminar = 0
         self.historic_velocidad = []
         # agregar velocidad maxima?
-
+        self.vel_max = 2.2
         # Genera un hilo para acelerar el auto
         threading = th.Thread(target=self.acelerar, args=())
         threading.start()
@@ -94,7 +94,7 @@ class Auto:
             self.historic_velocidad.append(self.velocidad)
             if self.next_car != None and self.x > self.next_car.x:
                 self.x = self.next_car.x
-
+        self.tiempo_terminar = time.time() - self.tiempo_inicio
     def __str__(self):
         if self.next_car == None:
             return f"Car {self.nombre}, color {self.color}: (x={self.x}, velocidad={self.velocidad}, Auto siguiente: None con vel: '')"
@@ -105,7 +105,7 @@ class Auto:
 
     def acelerar(self):
 
-        while self.x < self.x_max and self.colision == False:
+        while self.x < self.x_max and self.colision == False: # and self.velocidad <= self.vel_max:
             
             # se desconcentra 
             
@@ -196,7 +196,7 @@ class Auto:
             # if self.velocidad < 0.5:
             #     self.velocidad = 1
             # time.sleep(0.2)
-            chance = random.uniform(0,1)
+            chance = random.uniform(0,10)
             if chance < 0.005:
                 time.sleep(0.2)
                 print('se desconcentro', self.nombre,self.x)

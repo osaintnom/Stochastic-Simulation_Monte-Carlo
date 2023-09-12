@@ -9,7 +9,7 @@ import time
 
 
 class Ruta:
-    def __init__(self, autos=[], tiempo=1000, x_max=1000, y_max=10):
+    def __init__(self, autos=[], tiempo=10000, x_max=1000, y_max=10):
         self.autos = autos
         self.x_max = x_max
         self.finished_count = 0  # Track the number of cars that have finished
@@ -38,6 +38,7 @@ class Ruta:
         self.historic_mean_velocities = []
         self.historic_trip_duration = []
         self.data = pd.DataFrame(columns=['id', 'vel_mean', 'tiempo_terminar', 'colision', 'react_time', 'quieto_count'])
+        self.df_vel= pd.DataFrame([])
         #hacer un array por Ruta donde tenga la ssiguientes columnas: id, vel_mean, tiempo_terminar, colision, react_time, quieto_count
         #cada fila es un auto que termino 
 
@@ -147,7 +148,7 @@ class Ruta:
 
         # Update the text annotations
         self.collision_text.set_text(f'Collisions: {self.collision_count}')
-        self.car_text.set_text(f'Car Count: {car_count}')
+        self.car_text.set_text(f'Car Count in frame: {car_count}')
         self.finished_text.set_text(f'Finished Count: {self.finished_count}')
         self.cant_total_autos_text.set_text(f'Total Cars Count: {self.cant_total_autos}')  # Update total cars text
         self.ave_time_text.set_text(f'Average Trip Duration: {self.get_avg_trip_duration():.2f} segs en hacer 1km')
@@ -156,7 +157,7 @@ class Ruta:
 
         self.ln.set_data(self.xdata, self.ydata)
 
-        if len(self.historic_vel_per_auto) >= 100:
+        if len(self.historic_vel_per_auto) >= 200:
             #qeudarme con la longitud del menor lista y hacer un df para luego hacer un grafico de lineas
             length = min([len(x) for x in self.historic_vel_per_auto])
             # Slice all sublists to the minimum length
@@ -164,7 +165,8 @@ class Ruta:
             # Convert to a NumPy array
             historic_vel_per_auto = np.array(historic_vel_per_auto)
             # Convert to a pandas DataFrame and save as 'velocidades.csv' without an index column
-            pd.DataFrame(historic_vel_per_auto).to_csv('velocidades.csv', index=False)
+            self.df_vel = pd.DataFrame(historic_vel_per_auto)
+            self.df_vel.to_csv('velocidades.csv', index=False)
 
         return self.ln, self.collision_text, self.car_text, self.finished_text, self.cant_total_autos_text, self.ave_time_text, self.ave_v_text
     
@@ -205,7 +207,8 @@ class Ruta:
             'tiempo_terminar': auto.tiempo_terminar,
             'colision': auto.colision,
             'react_time': auto.reaction_time_mean,
-            'quieto_count': auto.quieto_count
+            'cant_autos_en_frame': len(self.autos)
+
         }
         self.data = pd.concat([self.data, pd.DataFrame([data_row])], ignore_index=True)
         self.data.to_csv('data.csv', index=False)
