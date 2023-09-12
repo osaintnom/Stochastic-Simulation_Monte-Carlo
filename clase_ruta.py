@@ -81,7 +81,7 @@ class Ruta:
     def get_avg_v(self):
         if len(self.historic_mean_velocities) == 0:
             return 0
-        return np.mean(self.historic_mean_velocities)
+        return 10*np.mean(self.historic_mean_velocities)
 
     def get_avg_trip_duration(self):
         if len(self.historic_trip_duration) == 0:
@@ -97,14 +97,19 @@ class Ruta:
         inicio = time.time()
         while time.time() - inicio < tiempo:
             choques = []
+            choques_truchos = []
+
             for auto in self.autos[::-1]:
                 if auto.colision == True:
                     self.historic_mean_velocities.append(np.mean(auto.historic_velocidad))
                     #agregar al array # [auto.nombre, np.mean(auto.historic_velocidad), auto.tiempo_terminar, auto.colision, auto.reaction_time, auto.quieto_count]
                     self.guardar_datos_auto(auto)
-                    choques.append(auto)
+                    
                     if auto.x > 50:
-                        self.collision_count += 1
+                        choques.append(auto)
+                    
+                    else:
+                        choques_truchos.append(auto)
                 elif auto.x > self.x_max:
                     self.historic_mean_velocities.append(np.mean(auto.historic_velocidad))
                     self.historic_vel_per_auto.append(auto.historic_velocidad)
@@ -112,8 +117,12 @@ class Ruta:
                     self.finished_count += 1
                     #agregar al array # auto.nombre(id), np.mean(auto.historic_velocidad), auto.tiempo_terminar, auto.colision, auto.reaction_time, auto.quieto_count
                     self.guardar_datos_auto(auto)
-                    choques.append(auto)
+                    choques_truchos.append(auto)
+            if len(choques) > 0:
+                self.collision_count += 1
             for auto in choques:
+                self.autos.remove(auto)
+            for auto in choques_truchos:
                 self.autos.remove(auto)
             for auto in self.autos[1:]:
                 auto.next_car = self.autos[self.autos.index(auto) - 1]
@@ -121,7 +130,7 @@ class Ruta:
                 self.autos[0].next_car = None
 
 
-            time.sleep(0.1)
+            time.sleep(0.5)
 
     def update(self, frame):
         self.xdata, self.ydata = [], []
@@ -169,7 +178,7 @@ class Ruta:
     def generar_autos(self, tiempo):
         inicio = time.time()
         while time.time() - inicio < tiempo:
-            pausa = random.uniform(0.5, 2)
+            pausa = random.uniform(1, 3)
             time.sleep(pausa)
             nombre = np.random.randint(0, 1000000)
             while nombre in self.historic_ids:
