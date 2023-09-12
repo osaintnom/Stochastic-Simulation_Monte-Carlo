@@ -9,7 +9,7 @@ import time
 
 
 class Ruta:
-    def __init__(self, autos=[], tiempo=1000, x_max=500, y_max=10):
+    def __init__(self, autos=[], tiempo=1000, x_max=1000, y_max=10):
         self.autos = autos
         self.x_max = x_max
         self.finished_count = 0  # Track the number of cars that have finished
@@ -119,7 +119,7 @@ class Ruta:
                 self.autos[0].next_car = None
 
 
-            time.sleep(1)
+            time.sleep(0.1)
 
     def update(self, frame):
         self.xdata, self.ydata = [], []
@@ -156,7 +156,7 @@ class Ruta:
     def generar_autos(self, tiempo):
         inicio = time.time()
         while time.time() - inicio < tiempo:
-            pausa = random.randint(1, 3)
+            pausa = random.uniform(0.5, 2)
             time.sleep(pausa)
             nombre = np.random.randint(0, 1000000)
             while nombre in self.historic_ids:
