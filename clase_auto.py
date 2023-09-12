@@ -19,7 +19,7 @@ class Auto:
         self.mean = mean
         self.delta = delta
         self.alpha = alpha
-        self.reaction_time_mean = random.uniform(0.06,0.09)
+        self.reaction_time_mean = random.normalvariate(0.08,0.01)
         self.aceleracion_max = random.lognormvariate(0.3,0.05)
         if self.aceleracion_max > 0.42:
             self.aceleracion_max = 0.42
@@ -136,7 +136,7 @@ class Auto:
                     if frenado < -self.frenado_max:
                         # print('esto')
                         frenado = -self.frenado_max
-                    self.velocidad = self.velocidad + frenado
+                    self.velocidad = self.velocidad + frenado* 0.1
                     if self.velocidad < 0:
                         self.velocidad = 0
                 else:
@@ -145,7 +145,7 @@ class Auto:
                     acelerar = random.lognormvariate(1, 1)*(2*(self.mean - self.velocidad)/self.mean)
                     if acelerar > self.aceleracion_max:
                         acelerar = self.aceleracion_max
-                    self.velocidad = self.velocidad + acelerar
+                    self.velocidad = self.velocidad + acelerar*0.1
                     # if vel < 0.5:
                         # print('acelerando', self.velocidad, self.mean,self.nombre,self.x,vel,acelerar)
 
@@ -166,36 +166,20 @@ class Auto:
                     if frenado < -self.frenado_max:
                         # print('esto')
                         frenado = -self.frenado_max
-                    self.velocidad = self.velocidad + frenado
+                    self.velocidad = self.velocidad + frenado* 0.1
                     if self.velocidad < 0:
                         self.velocidad = 0
                 else:
                     # print('acelerando')
                     acelerar = random.normalvariate(0, 0.5) 
-                    if self.velocidad > 100:
+                    if self.velocidad > 2.8:
                         acelerar = - abs(acelerar)
                     if acelerar > self.aceleracion_max:
                         acelerar = self.aceleracion_max
-                    self.velocidad = self.velocidad + acelerar
+                    self.velocidad = self.velocidad + acelerar*0.1
                     if self.velocidad < 0:
                         self.velocidad = 0
 
-                                  #en este caso sigue acelerando si puede
-                # en este caso quiere mantenerse cconstante 
-
-
-
-
-
-            #aceleracion aleatoria sobre la velocidad del auto
-            # acelerar = abs(random.uniform(0, 3))
-            # acelerar = random.gammavariate(1, 1)
-            # self.velocidad = self.velocidad * acelerar
-
-            # #velocidad minima
-            # if self.velocidad < 0.5:
-            #     self.velocidad = 1
-            # time.sleep(0.2)
             chance = random.uniform(0,10)
             if chance < 0.005:
                 time.sleep(0.2)
