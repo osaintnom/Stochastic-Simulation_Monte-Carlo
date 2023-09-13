@@ -9,7 +9,7 @@ import time
 
 
 class Ruta:
-    def __init__(self, autos=[], tiempo=10000, x_max=10000, y_max=10):
+    def __init__(self, autos=[], tiempo=10000, x_max=1000, y_max=10):
         """
         Initialize the Ruta (Road) simulation environment.
 
@@ -104,12 +104,12 @@ class Ruta:
         Checkthe amount of multas.
         """
         # Iterate through the cars in the simulation
-        for auto in self.autos:
-            if auto.multas > 0:
-                self.cant_multas += auto.multas
-            else:
-                self.cant_multas
-        return self.cant_multas
+        # for auto in self.autos:
+        #     if auto.multas > 0:
+        #         self.cant_multas += auto.multas
+        #     else:
+        #         self.cant_multas
+        # return self.cant_multas
 
     def eliminar_choques(self, tiempo):
         """
@@ -256,7 +256,7 @@ class Ruta:
         # Continue generating cars while the elapsed time is less than the specified simulation time
         while time.time() - inicio < tiempo:
             # Generate a random pause time between 1 and 3 seconds (simulating car arrivals)
-            pausa = random.uniform(1, 3)
+            pausa = random.uniform(1, 8)
             time.sleep(pausa)
             
             # Generate a random name for the new car and ensure it is unique
