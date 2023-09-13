@@ -42,6 +42,7 @@ class Ruta:
         self.finished_count = 0
         self.cant_total_autos = 0
         self.historic_vel_per_auto = []
+        # self.cant_multas = 0
 
         self.historic_mean_velocities = []
         self.historic_trip_duration = []
@@ -70,6 +71,7 @@ class Ruta:
         self.cant_total_autos_text = self.ax.annotate('', xy=(10, 0.6), fontsize=12, color='black')
         self.ave_time_text = self.ax.annotate('', xy=(10, 0.5), fontsize=12, color='black')
         self.ave_v_text = self.ax.annotate('', xy=(10, 0.4), fontsize=12, color='black')
+        # self.cant_multas_text = self.ax.annotate('', xy=(10, 0.3), fontsize=12, color='black')
 
         # Start threads for generating cars and removing collisions
         threading_autos = th.Thread(target=self.generar_autos, args=(tiempo,))
@@ -96,6 +98,18 @@ class Ruta:
     def init(self):
         self.ln.set_data([], [])
         return self.ln,
+
+    def multas_check(self):
+        """
+        Checkthe amount of multas.
+        """
+        # Iterate through the cars in the simulation
+        for auto in self.autos:
+            if auto.multas > 0:
+                self.cant_multas += auto.multas
+            else:
+                self.cant_multas
+        return self.cant_multas
 
     def eliminar_choques(self, tiempo):
         """
@@ -195,8 +209,9 @@ class Ruta:
         self.car_text.set_text(f'Car Count in frame: {car_count}')
         self.finished_text.set_text(f'Finished Count: {self.finished_count}')
         self.cant_total_autos_text.set_text(f'Total Cars Count: {self.cant_total_autos}')
-        self.ave_time_text.set_text(f'Average Trip Duration: {self.get_avg_trip_duration():.2f} segs en hacer 1km')
+        self.ave_time_text.set_text(f'Average Trip Duration: {self.get_avg_trip_duration():.2f} segs en hacer 10km')
         self.ave_v_text.set_text(f'Average Velocity: {self.get_avg_v():.2f} m/s')
+        # self.cant_multas_text.set_text(f'Cantidad de multas: {self.multas_check()}')
 
         # Update the line representing car positions
         self.ln.set_data(self.xdata, self.ydata)
@@ -281,7 +296,10 @@ class Ruta:
             'tiempo_terminar': auto.tiempo_terminar,
             'colision': auto.colision,
             'react_time': auto.reaction_time_mean,
-            'cant_autos_en_frame': len(self.autos)
+            'cant_autos_en_frame': len(self.autos),
+            'posicion_final': auto.x,
+            'cantidad_de_autos_enviados': self.cant_total_autos
+            # 'multas': auto.multas
         }
         
         # Concatenate the data as a new row in the 'data' DataFrame

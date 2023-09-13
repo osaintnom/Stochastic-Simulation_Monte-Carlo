@@ -51,6 +51,7 @@ class Auto:
         self.tiempo_inicio = time.time()  # Start time of car simulation
         self.tiempo_terminar = 0  # Elapsed time for the car's simulation
         self.historic_velocidad = []  # List to store historical velocities
+        self.multas = 0
 
         # Maximum velocity of the car
         self.vel_max = 2.2
@@ -72,6 +73,10 @@ class Auto:
 
         The car will either accelerate, decelerate, or remain stationary based on its state and surroundings.
         """
+        # Check if the car is traveling above the speed limit 2.3375 = 85km/h que es la multa 
+        if self.velocidad >= 2.3375: 
+            self.multas += 1
+            print(f'Auto {self.nombre} recibio una multaen {self.x}')
         if self.velocidad < 0:
             self.velocidad = 0
 
