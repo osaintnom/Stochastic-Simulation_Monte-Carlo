@@ -142,7 +142,7 @@ class Ruta:
         self.car_text = self.font.render(f'Car Count: {car_count}', True, (255, 255, 255))
         self.finished_text = self.font.render(f'Finished: {self.finished_count}', True, (255, 255, 255))
         self.cant_total_autos_text = self.font.render(f'Total Cars: {self.cant_total_autos}', True, (255, 255, 255))
-        self.ave_time_text = self.font.render(f'Avg Trip Duration: {self.get_avg_trip_duration():.2f}', True, (255, 255, 255))
+        self.ave_time_text = self.font.render(f'Avg Trip Duration: {self.get_avg_trip_duration():.2f}segs para 1km', True, (255, 255, 255))
         self.ave_v_text = self.font.render(f'Avg Velocity: {self.get_avg_v():.2f}m/s', True, (255, 255, 255))
 
         if len(self.historic_vel_per_auto) >= 200:
