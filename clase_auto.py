@@ -209,7 +209,7 @@ class Auto:
                 print('se desconcentro', self.nombre, self.x)
             elif chance < 0.0053:
                 print('se desconcentro', self.nombre, self.x)
-                time.sleep(0.5)  # Extended driver distraction (0.5s delay)
+                time.sleep(0.6)  # Extended driver distraction (0.5s delay)
             else:
                 time.sleep(random.uniform(self.reaction_time_mean - 0.01, self.reaction_time_mean + 0.01))
 
